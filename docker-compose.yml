@@ -2,14 +2,14 @@ version: '3.8'
 
 services:
   auth-db:
-    image: postgres:17-alpine          # ← última versión
+    image: postgres:17-alpine
     container_name: auth-db
     environment:
       POSTGRES_DB: auth_service
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
     ports:
-      - "5432:5432"   # solo para desarrollo
+      - "5432:5432"
     volumes:
       - auth-db-data:/var/lib/postgresql/data
     healthcheck:
@@ -19,7 +19,7 @@ services:
       retries: 5
 
   product-db:
-    image: postgres:17-alpine          # ← última versión
+    image: postgres:17-alpine
     container_name: product-db
     environment:
       POSTGRES_DB: product_service
@@ -36,7 +36,7 @@ services:
       retries: 5
 
   auth-service:
-    build: ./auth-service
+    build: ./apps/auth-service     # ← ruta actualizada
     container_name: auth-service
     ports:
       - "3000:3000"
@@ -55,7 +55,7 @@ services:
     restart: always
 
   product-service:
-    build: ./product-service
+    build: ./apps/product-service   # ← ruta actualizada
     container_name: product-service
     ports:
       - "3001:3000"
@@ -72,7 +72,7 @@ services:
     restart: always
 
   frontend:
-    build: ./frontend
+    build: ./apps/frontend          # ← ruta actualizada
     container_name: frontend
     ports:
       - "80:80"
