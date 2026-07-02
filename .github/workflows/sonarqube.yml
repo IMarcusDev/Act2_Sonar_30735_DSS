@@ -70,12 +70,13 @@ jobs:
           SONAR_HOST_URL: http://localhost:9000
           SONAR_TOKEN: ${{ steps.sonar-setup.outputs.token }}
 
-      - name: Save SonarQube snapshot as new baseline
-        if: success() && github.ref == 'refs/heads/main' && github.event_name == 'push'
-        uses: actions/cache/save@v4
-        with:
-          path: sonarqube-data
-          key: sonarqube-snapshot-${{ github.run_id }}
+      - name: Publish SonarQube summary
+        if: always()
+        continue-on-error: true
+        run: .github/sonarqube/publish-summary.sh
+        env:
+          SONAR_HOST_URL: http://localhost:9000
+          SONAR_TOKEN: ${{ steps.sonar-setup.outputs.token }}
 
       - name: Dump SonarQube logs on failure
         if: failure()
@@ -84,3 +85,14 @@ jobs:
       - name: Stop SonarQube
         if: always()
         run: docker stop sonarqube || true
+
+      - name: Fix snapshot ownership for cache save
+        if: success() && github.ref == 'refs/heads/main' && github.event_name == 'push'
+        run: sudo chown -R "$(id -u):$(id -g)" sonarqube-data
+
+      - name: Save SonarQube snapshot as new baseline
+        if: success() && github.ref == 'refs/heads/main' && github.event_name == 'push'
+        uses: actions/cache/save@v4
+        with:
+          path: sonarqube-data
+          key: sonarqube-snapshot-${{ github.run_id }}
