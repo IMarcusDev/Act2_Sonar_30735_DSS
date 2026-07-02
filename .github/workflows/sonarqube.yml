@@ -1,0 +1,87 @@
+name: SonarQube Quality Gate
+
+on:
+  push:
+  pull_request:
+    branches: [main]
+
+jobs:
+  sonarqube:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Restore last successful SonarQube snapshot
+        uses: actions/cache/restore@v4
+        with:
+          path: sonarqube-data
+          key: sonarqube-snapshot-none
+          restore-keys: |
+            sonarqube-snapshot-
+
+      - name: Tune host for SonarQube's embedded Elasticsearch
+        run: |
+          sudo sysctl -w vm.max_map_count=262144
+          sudo sysctl -w fs.file-max=131072
+          ulimit -n 131072
+
+      - name: Start SonarQube
+        run: |
+          mkdir -p sonarqube-data sonarqube-extensions sonarqube-logs
+          chmod -R 777 sonarqube-data sonarqube-extensions sonarqube-logs
+          docker run -d --name sonarqube \
+            -p 9000:9000 \
+            -v "${PWD}/sonarqube-data:/opt/sonarqube/data" \
+            -v "${PWD}/sonarqube-extensions:/opt/sonarqube/extensions" \
+            -v "${PWD}/sonarqube-logs:/opt/sonarqube/logs" \
+            sonarqube:community
+
+      - name: Wait for SonarQube to be ready
+        run: .github/sonarqube/wait-for-sonarqube.sh
+
+      - name: Configure admin token and Quality Gate
+        id: sonar-setup
+        run: .github/sonarqube/setup-quality-gate.sh
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Test auth-service (coverage)
+        working-directory: apps/auth-service
+        run: |
+          npm ci
+          npm run test:cov
+
+      - name: Test products (coverage)
+        working-directory: apps/products
+        run: |
+          npm ci
+          npm run test:cov
+
+      - name: Install frontend deps (mejora el análisis de tipos TS)
+        working-directory: apps/frontend
+        run: npm ci
+
+      - name: SonarQube Scan
+        uses: sonarsource/sonarqube-scan-action@v4
+        env:
+          SONAR_HOST_URL: http://localhost:9000
+          SONAR_TOKEN: ${{ steps.sonar-setup.outputs.token }}
+
+      - name: Save SonarQube snapshot as new baseline
+        if: success() && github.ref == 'refs/heads/main' && github.event_name == 'push'
+        uses: actions/cache/save@v4
+        with:
+          path: sonarqube-data
+          key: sonarqube-snapshot-${{ github.run_id }}
+
+      - name: Dump SonarQube logs on failure
+        if: failure()
+        run: docker logs sonarqube || true
+
+      - name: Stop SonarQube
+        if: always()
+        run: docker stop sonarqube || true
