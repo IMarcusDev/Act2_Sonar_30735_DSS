@@ -9,7 +9,6 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
-      // getOrThrow lanza una excepción si JWT_SECRET no está definida en .env
       secretOrKey: config.getOrThrow<string>('JWT_SECRET'),
     });
   }

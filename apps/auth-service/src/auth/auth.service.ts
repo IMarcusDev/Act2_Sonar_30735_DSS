@@ -9,7 +9,7 @@ export class AuthService {
   constructor(
     private usersService: UsersService,
     private jwtService: JwtService,
-    private configService: ConfigService, // inyectar ConfigService
+    private configService: ConfigService,
   ) {}
 
   // Registro público de nuevo usuario (devuelve tokens)
@@ -24,7 +24,6 @@ export class AuthService {
     if (!user) return null;
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) return null;
-    // Renombramos la propiedad 'password' para evitar conflicto
     const { password: _, refreshToken, ...result } = user;
     return result;
   }

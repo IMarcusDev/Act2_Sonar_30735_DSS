@@ -2,7 +2,6 @@ import { Injectable, CanActivate, ExecutionContext } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { UserRole } from '../../users/entities/user.entity';
 
-// Decorador para establecer roles requeridos
 export const ROLES_KEY = 'roles';
 export const Roles = (...roles: UserRole[]) =>
   Reflect.metadata(ROLES_KEY, roles);
