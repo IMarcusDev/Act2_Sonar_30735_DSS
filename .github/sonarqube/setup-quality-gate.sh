@@ -48,13 +48,17 @@ if [ -z "$EXISTING" ]; then
       --data-urlencode "error=${error}" > /dev/null
   }
 
-
-  add_condition "new_reliability_rating" "GT" "1"
-  add_condition "new_security_rating" "GT" "1"
+  add_condition "new_coverage" "LT" "90"
+  add_condition "new_duplicated_lines_density" "GT" "2"
   add_condition "new_maintainability_rating" "GT" "1"
-  add_condition "new_duplicated_lines_density" "GT" "5"
-  add_condition "new_coverage" "LT" "60"
+  add_condition "new_reliability_rating" "GT" "1"
   add_condition "new_security_hotspots_reviewed" "LT" "100"
+  add_condition "new_security_rating" "GT" "1"
+
+  # -- Código total --
+  add_condition "code_smells" "GT" "10"
+  add_condition "coverage" "LT" "95"
+  add_condition "duplicated_lines_density" "GT" "2"
 
   curl -s -u "${AUTH}" -X POST "${SONAR_HOST_URL}/api/qualitygates/set_as_default" \
     --data-urlencode "name=${GATE_NAME}" > /dev/null
