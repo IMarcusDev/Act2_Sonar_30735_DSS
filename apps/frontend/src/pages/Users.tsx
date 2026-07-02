@@ -74,7 +74,7 @@ export const Users = () => {
   return (
     <div>
       <Toast ref={toast} />
-      <Button label="Nuevo Usuario" icon="pi pi-plus" onClick={openNew} className="mb-3" />
+      <Button label="Nuevo USER" icon="pi pi-plus" onClick={openNew} className="mb-3" />
       <DataTable value={users} paginator rows={10}>
         <Column field="nombres" header="Nombres" />
         <Column field="apellidos" header="Apellidos" />
