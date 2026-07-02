@@ -88,7 +88,7 @@ export const Categories = () => {
   return (
     <div>
       <Toast ref={toast} />
-      <Button label="Nueva Categoría" icon="pi pi-plus" onClick={openNew} className="mb-3" />
+      <Button label="Nueva Category" icon="pi pi-plus" onClick={openNew} className="mb-3" />
       <DataTable value={categories} paginator rows={10} emptyMessage="No hay categorías registradas">
         <Column field="name" header="Nombre" />
         <Column field="description" header="Descripción" />
